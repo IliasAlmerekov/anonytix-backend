@@ -115,10 +115,95 @@ class DatabaseMigrationTest {
                 Integer.class);
 
         assertThat(years).containsExactly(2024, 2025, 2026);
-        assertThat(sufficientlyLargeDepartmentYears).isEqualTo(12);
+        assertThat(sufficientlyLargeDepartmentYears).isEqualTo(18);
         assertThat(submissions).isGreaterThanOrEqualTo(288);
         assertThat(answers).isGreaterThanOrEqualTo(submissions * 6);
         assertThat(analyses).isEqualTo(submissions);
-        assertThat(findings).isEqualTo(submissions);
+        assertThat(findings).isGreaterThanOrEqualTo(submissions);
+    }
+
+    @Test
+    void seedsExpandedEnglishDashboardDataForSixDepartments() {
+        List<String> departments = jdbcTemplate.queryForList(
+                """
+                SELECT name
+                FROM departments
+                WHERE company_id = '10729623-735e-4382-854f-33e3450bdac7'
+                  AND active = true
+                ORDER BY name
+                """,
+                String.class);
+        Integer sufficientlyLargeDepartmentYears = jdbcTemplate.queryForObject(
+                """
+                SELECT count(*)
+                FROM (
+                    SELECT department_id,
+                           EXTRACT(YEAR FROM submitted_at)::integer AS year
+                    FROM feedback_submissions
+                    WHERE company_id = '10729623-735e-4382-854f-33e3450bdac7'
+                      AND status = 'APPROVED'
+                    GROUP BY department_id, EXTRACT(YEAR FROM submitted_at)
+                    HAVING count(*) >= 5
+                ) grouped_feedback
+                """,
+                Integer.class);
+        Integer coveredMonths = jdbcTemplate.queryForObject(
+                """
+                SELECT count(*)
+                FROM (
+                    SELECT DISTINCT date_trunc('month', submitted_at)
+                    FROM feedback_submissions
+                    WHERE company_id = '10729623-735e-4382-854f-33e3450bdac7'
+                      AND status = 'APPROVED'
+                      AND submitted_at < '2026-07-01T00:00:00Z'
+                ) months
+                """,
+                Integer.class);
+        Integer yearsWithMixedSentiment = jdbcTemplate.queryForObject(
+                """
+                SELECT count(*)
+                FROM (
+                    SELECT EXTRACT(YEAR FROM fs.submitted_at)::integer AS year
+                    FROM feedback_submissions fs
+                    JOIN ai_analyses aa ON aa.submission_id = fs.id
+                    WHERE fs.company_id = '10729623-735e-4382-854f-33e3450bdac7'
+                      AND fs.status = 'APPROVED'
+                    GROUP BY EXTRACT(YEAR FROM fs.submitted_at)
+                    HAVING count(*) FILTER (
+                               WHERE aa.overall_sentiment = 'POSITIVE') > 0
+                       AND count(*) FILTER (
+                               WHERE aa.overall_sentiment = 'NEGATIVE') > 0
+                ) mixed_years
+                """,
+                Integer.class);
+        Integer ratingCategories = jdbcTemplate.queryForObject(
+                """
+                SELECT count(DISTINCT category)
+                FROM questions
+                WHERE survey_id = '4e24a5f0-2f07-4b89-9cd6-861e59dc156e'
+                  AND type = 'RATING'
+                  AND active = true
+                """,
+                Integer.class);
+        Integer submissions = jdbcTemplate.queryForObject(
+                """
+                SELECT count(*)
+                FROM feedback_submissions
+                WHERE company_id = '10729623-735e-4382-854f-33e3450bdac7'
+                """,
+                Integer.class);
+
+        assertThat(departments).containsExactly(
+                "Customer Success",
+                "Engineering",
+                "Marketing",
+                "Operations",
+                "People & Culture",
+                "Sales");
+        assertThat(sufficientlyLargeDepartmentYears).isEqualTo(18);
+        assertThat(coveredMonths).isEqualTo(30);
+        assertThat(yearsWithMixedSentiment).isEqualTo(3);
+        assertThat(ratingCategories).isGreaterThanOrEqualTo(9);
+        assertThat(submissions).isGreaterThanOrEqualTo(1_300);
     }
 }
