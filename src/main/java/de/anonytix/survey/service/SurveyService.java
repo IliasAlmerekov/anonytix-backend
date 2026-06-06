@@ -78,7 +78,10 @@ public class SurveyService {
             UUID companyId,
             UUID surveyId,
             UpdateSurveyRequest request) {
-        Survey survey = requireSurvey(companyId, surveyId);
+        // Detailed fetch so the SurveyResponse (incl. each question's lazy
+        // departmentIds) can be serialized after the transaction closes
+        // (open-in-view is disabled).
+        Survey survey = requireDetailedSurvey(companyId, surveyId);
         requireDraft(survey);
         survey.update(
                 request.title() == null ? null : request.title().trim(),
