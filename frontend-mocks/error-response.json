@@ -1,0 +1,13 @@
+{
+  "timestamp": "2026-06-06T12:35:00Z",
+  "status": 400,
+  "code": "VALIDATION_FAILED",
+  "message": "Die Anfrage enthält ungültige Werte.",
+  "path": "/api/v1/public/invitations/demo-token/submissions",
+  "fieldErrors": [
+    {
+      "field": "answers[0].numericValue",
+      "message": "Der Wert muss zwischen 1 und 5 liegen."
+    }
+  ]
+}

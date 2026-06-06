@@ -1,0 +1,162 @@
+{
+  "baseUrl": "http://localhost:8080/api/v1",
+  "authentication": {
+    "enabledForMvp": false,
+    "note": "Interne Endpunkte enthalten deshalb vorerst die companyId im Pfad."
+  },
+  "endpoints": [
+    {
+      "method": "GET",
+      "path": "/public/invitations/{token}/form",
+      "purpose": "Öffentliches Formular für einen Einladungslink laden",
+      "successStatus": 200,
+      "mockResponse": "public-form.json"
+    },
+    {
+      "method": "POST",
+      "path": "/public/invitations/{token}/submissions",
+      "purpose": "Feedback verbindlich absenden",
+      "successStatus": 201,
+      "mockRequest": "requests/submit-feedback.json",
+      "mockResponse": "submission-response.json"
+    },
+    {
+      "method": "GET",
+      "path": "/companies/{companyId}/departments",
+      "purpose": "Abteilungen auflisten",
+      "successStatus": 200
+    },
+    {
+      "method": "POST",
+      "path": "/companies/{companyId}/departments",
+      "purpose": "Abteilung erstellen",
+      "successStatus": 201
+    },
+    {
+      "method": "PATCH",
+      "path": "/companies/{companyId}/departments/{departmentId}",
+      "purpose": "Abteilung bearbeiten oder deaktivieren",
+      "successStatus": 200
+    },
+    {
+      "method": "GET",
+      "path": "/companies/{companyId}/surveys",
+      "purpose": "Umfragen auflisten",
+      "successStatus": 200
+    },
+    {
+      "method": "POST",
+      "path": "/companies/{companyId}/surveys",
+      "purpose": "Umfrage aus Vorlage erstellen",
+      "successStatus": 201,
+      "mockRequest": "requests/create-survey.json"
+    },
+    {
+      "method": "GET",
+      "path": "/companies/{companyId}/surveys/{surveyId}",
+      "purpose": "Umfrage inklusive Fragen laden",
+      "successStatus": 200
+    },
+    {
+      "method": "PATCH",
+      "path": "/companies/{companyId}/surveys/{surveyId}",
+      "purpose": "Entwurf einer Umfrage bearbeiten",
+      "successStatus": 200
+    },
+    {
+      "method": "POST",
+      "path": "/companies/{companyId}/surveys/{surveyId}/questions",
+      "purpose": "Eigene Frage hinzufügen",
+      "successStatus": 201,
+      "mockRequest": "requests/create-question.json"
+    },
+    {
+      "method": "PATCH",
+      "path": "/companies/{companyId}/surveys/{surveyId}/questions/{questionId}",
+      "purpose": "Frage im Entwurf bearbeiten",
+      "successStatus": 200
+    },
+    {
+      "method": "DELETE",
+      "path": "/companies/{companyId}/surveys/{surveyId}/questions/{questionId}",
+      "purpose": "Frage im Entwurf deaktivieren",
+      "successStatus": 204
+    },
+    {
+      "method": "PUT",
+      "path": "/companies/{companyId}/surveys/{surveyId}/questions/order",
+      "purpose": "Reihenfolge der Fragen aktualisieren",
+      "successStatus": 204
+    },
+    {
+      "method": "POST",
+      "path": "/companies/{companyId}/surveys/{surveyId}/publish",
+      "purpose": "Umfrage veröffentlichen und sperren",
+      "successStatus": 200
+    },
+    {
+      "method": "GET",
+      "path": "/companies/{companyId}/campaigns",
+      "purpose": "Kampagnen auflisten",
+      "successStatus": 200
+    },
+    {
+      "method": "POST",
+      "path": "/companies/{companyId}/campaigns",
+      "purpose": "Kampagne für eine veröffentlichte Umfrage erstellen",
+      "successStatus": 201,
+      "mockRequest": "requests/create-campaign.json"
+    },
+    {
+      "method": "POST",
+      "path": "/companies/{companyId}/campaigns/{campaignId}/activate",
+      "purpose": "Kampagne aktivieren",
+      "successStatus": 200
+    },
+    {
+      "method": "POST",
+      "path": "/companies/{companyId}/campaigns/{campaignId}/invitations",
+      "purpose": "Einladungslinks je Abteilung erzeugen",
+      "successStatus": 201,
+      "mockRequest": "requests/generate-invitations.json"
+    },
+    {
+      "method": "GET",
+      "path": "/companies/{companyId}/dashboard/overview?campaignId={campaignId}",
+      "purpose": "Dashboard-Übersicht laden",
+      "successStatus": 200,
+      "mockResponse": "dashboard-overview.json"
+    },
+    {
+      "method": "GET",
+      "path": "/companies/{companyId}/dashboard/departments/{departmentId}?campaignId={campaignId}",
+      "purpose": "Abteilungs-Drilldown laden",
+      "successStatus": 200,
+      "mockResponse": "department-dashboard.json"
+    },
+    {
+      "method": "GET",
+      "path": "/platform/moderation/submissions?status=REVIEW_PENDING",
+      "purpose": "Feedbacks für die interne Kontrolle auflisten",
+      "successStatus": 200
+    },
+    {
+      "method": "GET",
+      "path": "/platform/moderation/submissions/{submissionId}",
+      "purpose": "Anonymisierte KI-Analyse zur Kontrolle laden",
+      "successStatus": 200
+    },
+    {
+      "method": "POST",
+      "path": "/platform/moderation/submissions/{submissionId}/approve",
+      "purpose": "Analyse für die Aggregation freigeben",
+      "successStatus": 200
+    },
+    {
+      "method": "POST",
+      "path": "/platform/moderation/submissions/{submissionId}/reject",
+      "purpose": "Analyse ablehnen",
+      "successStatus": 200
+    }
+  ]
+}

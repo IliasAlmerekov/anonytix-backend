@@ -1,0 +1,34 @@
+{
+  "answers": [
+    {
+      "questionId": "84b9c571-a11c-4fd4-84e5-76ec5f6055f0",
+      "numericValue": 3,
+      "textValue": null,
+      "booleanValue": null,
+      "selectedOptionIds": []
+    },
+    {
+      "questionId": "39f96f91-9ad4-4884-97fd-9dd2603fe409",
+      "numericValue": 2,
+      "textValue": null,
+      "booleanValue": null,
+      "selectedOptionIds": []
+    },
+    {
+      "questionId": "99f2ed06-50c2-423a-a864-5713d89da83b",
+      "numericValue": null,
+      "textValue": null,
+      "booleanValue": null,
+      "selectedOptionIds": [
+        "53d661ac-031d-44c7-82ff-b2c884394262"
+      ]
+    },
+    {
+      "questionId": "5a369b24-8da8-48d3-a274-a9530fceae46",
+      "numericValue": null,
+      "textValue": "Seit der Umstellung betreue ich mehrere Projekte gleichzeitig. Prioritäten ändern sich häufig und die Arbeitsbelastung ist zu hoch.",
+      "booleanValue": null,
+      "selectedOptionIds": []
+    }
+  ]
+}

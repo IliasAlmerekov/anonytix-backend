@@ -1,0 +1,1296 @@
+openapi: 3.0.3
+info:
+  title: Anonytix MVP API
+  version: 1.0.0
+  description: API-Vertrag für das React-Frontend und das Spring-Boot-Backend.
+servers:
+  - url: http://localhost:8080/api/v1
+
+tags:
+  - name: Public Feedback
+  - name: Departments
+  - name: Surveys
+  - name: Campaigns
+  - name: Dashboard
+  - name: Moderation
+
+paths:
+  /public/invitations/{token}/form:
+    get:
+      tags: [Public Feedback]
+      summary: Öffentliches Formular laden
+      parameters:
+        - $ref: "#/components/parameters/InvitationToken"
+      responses:
+        "200":
+          description: Dynamisches Formular
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicSurveyForm"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "410":
+          $ref: "#/components/responses/Gone"
+
+  /public/invitations/{token}/submissions:
+    post:
+      tags: [Public Feedback]
+      summary: Feedback verbindlich absenden
+      parameters:
+        - $ref: "#/components/parameters/InvitationToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubmitFeedbackRequest"
+      responses:
+        "201":
+          description: Feedback angenommen
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubmissionResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "410":
+          $ref: "#/components/responses/Gone"
+
+  /companies/{companyId}/departments:
+    get:
+      tags: [Departments]
+      summary: Abteilungen auflisten
+      parameters:
+        - $ref: "#/components/parameters/CompanyId"
+      responses:
+        "200":
+          description: Abteilungen
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Department"
+    post:
+      tags: [Departments]
+      summary: Abteilung erstellen
+      parameters:
+        - $ref: "#/components/parameters/CompanyId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateDepartmentRequest"
+      responses:
+        "201":
+          description: Erstellte Abteilung
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Department"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /companies/{companyId}/departments/{departmentId}:
+    patch:
+      tags: [Departments]
+      summary: Abteilung bearbeiten oder deaktivieren
+      parameters:
+        - $ref: "#/components/parameters/CompanyId"
+        - $ref: "#/components/parameters/DepartmentId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateDepartmentRequest"
+      responses:
+        "200":
+          description: Aktualisierte Abteilung
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Department"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /companies/{companyId}/surveys:
+    get:
+      tags: [Surveys]
+      summary: Umfragen auflisten
+      parameters:
+        - $ref: "#/components/parameters/CompanyId"
+      responses:
+        "200":
+          description: Umfragen
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SurveySummary"
+    post:
+      tags: [Surveys]
+      summary: Umfrage aus einer Vorlage erstellen
+      parameters:
+        - $ref: "#/components/parameters/CompanyId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSurveyRequest"
+      responses:
+        "201":
+          description: Erstellte Umfrage
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Survey"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /companies/{companyId}/surveys/{surveyId}:
+    get:
+      tags: [Surveys]
+      summary: Umfrage inklusive Fragen laden
+      parameters:
+        - $ref: "#/components/parameters/CompanyId"
+        - $ref: "#/components/parameters/SurveyId"
+      responses:
+        "200":
+          description: Umfrage
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Survey"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    patch:
+      tags: [Surveys]
+      summary: Umfrage im Entwurfsstatus bearbeiten
+      parameters:
+        - $ref: "#/components/parameters/CompanyId"
+        - $ref: "#/components/parameters/SurveyId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateSurveyRequest"
+      responses:
+        "200":
+          description: Aktualisierte Umfrage
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Survey"
+        "409":
+          $ref: "#/components/responses/Conflict"
+
+  /companies/{companyId}/surveys/{surveyId}/questions:
+    post:
+      tags: [Surveys]
+      summary: Frage hinzufügen
+      parameters:
+        - $ref: "#/components/parameters/CompanyId"
+        - $ref: "#/components/parameters/SurveyId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuestionWriteRequest"
+      responses:
+        "201":
+          description: Erstellte Frage
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Question"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "409":
+          $ref: "#/components/responses/Conflict"
+
+  /companies/{companyId}/surveys/{surveyId}/questions/{questionId}:
+    patch:
+      tags: [Surveys]
+      summary: Frage bearbeiten
+      parameters:
+        - $ref: "#/components/parameters/CompanyId"
+        - $ref: "#/components/parameters/SurveyId"
+        - $ref: "#/components/parameters/QuestionId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuestionWriteRequest"
+      responses:
+        "200":
+          description: Aktualisierte Frage
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Question"
+        "409":
+          $ref: "#/components/responses/Conflict"
+    delete:
+      tags: [Surveys]
+      summary: Frage deaktivieren
+      parameters:
+        - $ref: "#/components/parameters/CompanyId"
+        - $ref: "#/components/parameters/SurveyId"
+        - $ref: "#/components/parameters/QuestionId"
+      responses:
+        "204":
+          description: Frage deaktiviert
+        "409":
+          $ref: "#/components/responses/Conflict"
+
+  /companies/{companyId}/surveys/{surveyId}/questions/order:
+    put:
+      tags: [Surveys]
+      summary: Fragen neu sortieren
+      parameters:
+        - $ref: "#/components/parameters/CompanyId"
+        - $ref: "#/components/parameters/SurveyId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [questionIds]
+              properties:
+                questionIds:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+      responses:
+        "204":
+          description: Reihenfolge gespeichert
+        "409":
+          $ref: "#/components/responses/Conflict"
+
+  /companies/{companyId}/surveys/{surveyId}/publish:
+    post:
+      tags: [Surveys]
+      summary: Umfrage veröffentlichen
+      parameters:
+        - $ref: "#/components/parameters/CompanyId"
+        - $ref: "#/components/parameters/SurveyId"
+      responses:
+        "200":
+          description: Veröffentlichte Umfrage
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Survey"
+        "409":
+          $ref: "#/components/responses/Conflict"
+
+  /companies/{companyId}/campaigns:
+    get:
+      tags: [Campaigns]
+      summary: Kampagnen auflisten
+      parameters:
+        - $ref: "#/components/parameters/CompanyId"
+      responses:
+        "200":
+          description: Kampagnen
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Campaign"
+    post:
+      tags: [Campaigns]
+      summary: Kampagne erstellen
+      parameters:
+        - $ref: "#/components/parameters/CompanyId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCampaignRequest"
+      responses:
+        "201":
+          description: Erstellte Kampagne
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Campaign"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /companies/{companyId}/campaigns/{campaignId}/activate:
+    post:
+      tags: [Campaigns]
+      summary: Kampagne aktivieren
+      parameters:
+        - $ref: "#/components/parameters/CompanyId"
+        - $ref: "#/components/parameters/CampaignId"
+      responses:
+        "200":
+          description: Aktivierte Kampagne
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Campaign"
+        "409":
+          $ref: "#/components/responses/Conflict"
+
+  /companies/{companyId}/campaigns/{campaignId}/invitations:
+    post:
+      tags: [Campaigns]
+      summary: Einladungslinks je Abteilung erzeugen
+      parameters:
+        - $ref: "#/components/parameters/CompanyId"
+        - $ref: "#/components/parameters/CampaignId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GenerateInvitationsRequest"
+      responses:
+        "201":
+          description: Erzeugte Einladungen
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvitationBatchResponse"
+
+  /companies/{companyId}/dashboard/overview:
+    get:
+      tags: [Dashboard]
+      summary: Dashboard-Übersicht laden
+      parameters:
+        - $ref: "#/components/parameters/CompanyId"
+        - $ref: "#/components/parameters/CampaignIdQuery"
+      responses:
+        "200":
+          description: Dashboard-Daten
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardOverview"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /companies/{companyId}/dashboard/departments/{departmentId}:
+    get:
+      tags: [Dashboard]
+      summary: Abteilungs-Drilldown laden
+      parameters:
+        - $ref: "#/components/parameters/CompanyId"
+        - $ref: "#/components/parameters/DepartmentId"
+        - $ref: "#/components/parameters/CampaignIdQuery"
+      responses:
+        "200":
+          description: Abteilungsdashboard oder unterdrückte Statistik
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DepartmentDashboard"
+
+  /platform/moderation/submissions:
+    get:
+      tags: [Moderation]
+      summary: Moderationswarteschlange laden
+      parameters:
+        - name: status
+          in: query
+          schema:
+            $ref: "#/components/schemas/SubmissionStatus"
+      responses:
+        "200":
+          description: Moderationsfälle
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ModerationSummary"
+
+  /platform/moderation/submissions/{submissionId}:
+    get:
+      tags: [Moderation]
+      summary: Moderationsfall laden
+      parameters:
+        - $ref: "#/components/parameters/SubmissionId"
+      responses:
+        "200":
+          description: Moderationsfall
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ModerationDetail"
+
+  /platform/moderation/submissions/{submissionId}/approve:
+    post:
+      tags: [Moderation]
+      summary: Feedback freigeben
+      parameters:
+        - $ref: "#/components/parameters/SubmissionId"
+      responses:
+        "200":
+          description: Freigegebener Moderationsfall
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ModerationSummary"
+
+  /platform/moderation/submissions/{submissionId}/reject:
+    post:
+      tags: [Moderation]
+      summary: Feedback ablehnen
+      parameters:
+        - $ref: "#/components/parameters/SubmissionId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason:
+                  type: string
+                  maxLength: 1000
+      responses:
+        "200":
+          description: Abgelehnter Moderationsfall
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ModerationSummary"
+
+components:
+  parameters:
+    InvitationToken:
+      name: token
+      in: path
+      required: true
+      schema:
+        type: string
+        minLength: 20
+    CompanyId:
+      name: companyId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    DepartmentId:
+      name: departmentId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    SurveyId:
+      name: surveyId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    QuestionId:
+      name: questionId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    CampaignId:
+      name: campaignId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    CampaignIdQuery:
+      name: campaignId
+      in: query
+      required: true
+      schema:
+        type: string
+        format: uuid
+    SubmissionId:
+      name: submissionId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  responses:
+    BadRequest:
+      description: Anfrage ungültig
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiError"
+    NotFound:
+      description: Ressource nicht gefunden
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiError"
+    Conflict:
+      description: Konflikt mit dem aktuellen Status
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiError"
+    Gone:
+      description: Einladungslink ist abgelaufen
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiError"
+
+  schemas:
+    Department:
+      type: object
+      required: [id, name, code, active]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        code:
+          type: string
+        active:
+          type: boolean
+
+    CreateDepartmentRequest:
+      type: object
+      required: [name, code]
+      properties:
+        name:
+          type: string
+          maxLength: 120
+        code:
+          type: string
+          maxLength: 50
+
+    UpdateDepartmentRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 120
+        active:
+          type: boolean
+
+    SurveySummary:
+      type: object
+      required: [id, title, type, status, version]
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        type:
+          $ref: "#/components/schemas/SurveyType"
+        status:
+          $ref: "#/components/schemas/SurveyStatus"
+        version:
+          type: integer
+
+    Survey:
+      allOf:
+        - $ref: "#/components/schemas/SurveySummary"
+        - type: object
+          properties:
+            description:
+              type: string
+              nullable: true
+            questions:
+              type: array
+              items:
+                $ref: "#/components/schemas/Question"
+
+    CreateSurveyRequest:
+      type: object
+      required: [title, type, templateKey]
+      properties:
+        title:
+          type: string
+          maxLength: 160
+        description:
+          type: string
+          nullable: true
+        type:
+          $ref: "#/components/schemas/SurveyType"
+        templateKey:
+          type: string
+          enum: [EMPLOYEE_SATISFACTION, EXIT_INTERVIEW]
+
+    UpdateSurveyRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          maxLength: 160
+        description:
+          type: string
+          nullable: true
+
+    Question:
+      type: object
+      required: [id, text, type, category, required, position, options]
+      properties:
+        id:
+          type: string
+          format: uuid
+        text:
+          type: string
+        helpText:
+          type: string
+          nullable: true
+        type:
+          $ref: "#/components/schemas/QuestionType"
+        category:
+          type: string
+        required:
+          type: boolean
+        position:
+          type: integer
+        minimumValue:
+          type: integer
+          nullable: true
+        maximumValue:
+          type: integer
+          nullable: true
+        maximumLength:
+          type: integer
+          nullable: true
+        analyzeWithAi:
+          type: boolean
+        departmentIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+        options:
+          type: array
+          items:
+            $ref: "#/components/schemas/QuestionOption"
+
+    QuestionWriteRequest:
+      type: object
+      required: [text, type, category, required]
+      properties:
+        text:
+          type: string
+          maxLength: 1000
+        helpText:
+          type: string
+          nullable: true
+        type:
+          $ref: "#/components/schemas/QuestionType"
+        category:
+          type: string
+        required:
+          type: boolean
+        minimumValue:
+          type: integer
+          nullable: true
+        maximumValue:
+          type: integer
+          nullable: true
+        maximumLength:
+          type: integer
+          nullable: true
+        analyzeWithAi:
+          type: boolean
+        departmentIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+        options:
+          type: array
+          items:
+            $ref: "#/components/schemas/QuestionOptionWriteRequest"
+
+    QuestionOption:
+      type: object
+      required: [id, label, value, position]
+      properties:
+        id:
+          type: string
+          format: uuid
+        label:
+          type: string
+        value:
+          type: string
+        position:
+          type: integer
+
+    QuestionOptionWriteRequest:
+      type: object
+      required: [label, value, position]
+      properties:
+        label:
+          type: string
+        value:
+          type: string
+        position:
+          type: integer
+
+    PublicSurveyForm:
+      type: object
+      required:
+        [campaignId, surveyId, title, surveyType, department, expiresAt, questions]
+      properties:
+        campaignId:
+          type: string
+          format: uuid
+        surveyId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        surveyType:
+          $ref: "#/components/schemas/SurveyType"
+        department:
+          $ref: "#/components/schemas/DepartmentReference"
+        expiresAt:
+          type: string
+          format: date-time
+        questions:
+          type: array
+          items:
+            $ref: "#/components/schemas/Question"
+
+    SubmitFeedbackRequest:
+      type: object
+      required: [answers]
+      properties:
+        answers:
+          type: array
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/AnswerRequest"
+
+    AnswerRequest:
+      type: object
+      required: [questionId]
+      properties:
+        questionId:
+          type: string
+          format: uuid
+        numericValue:
+          type: number
+          nullable: true
+        textValue:
+          type: string
+          nullable: true
+        booleanValue:
+          type: boolean
+          nullable: true
+        selectedOptionIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+
+    SubmissionResponse:
+      type: object
+      required: [submissionId, status, submittedAt, message]
+      properties:
+        submissionId:
+          type: string
+          format: uuid
+        status:
+          $ref: "#/components/schemas/SubmissionStatus"
+        submittedAt:
+          type: string
+          format: date-time
+        message:
+          type: string
+
+    Campaign:
+      type: object
+      required: [id, surveyId, name, startsAt, endsAt, status]
+      properties:
+        id:
+          type: string
+          format: uuid
+        surveyId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        startsAt:
+          type: string
+          format: date-time
+        endsAt:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [SCHEDULED, ACTIVE, CLOSED]
+
+    CreateCampaignRequest:
+      type: object
+      required: [surveyId, name, startsAt, endsAt]
+      properties:
+        surveyId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        startsAt:
+          type: string
+          format: date-time
+        endsAt:
+          type: string
+          format: date-time
+
+    GenerateInvitationsRequest:
+      type: object
+      required: [departments, expiresAt]
+      properties:
+        departments:
+          type: array
+          items:
+            type: object
+            required: [departmentId, amount]
+            properties:
+              departmentId:
+                type: string
+                format: uuid
+              amount:
+                type: integer
+                minimum: 1
+        expiresAt:
+          type: string
+          format: date-time
+
+    InvitationBatchResponse:
+      type: object
+      required: [campaignId, invitations]
+      properties:
+        campaignId:
+          type: string
+          format: uuid
+        invitations:
+          type: array
+          items:
+            type: object
+            required: [departmentId, url, expiresAt]
+            properties:
+              departmentId:
+                type: string
+                format: uuid
+              url:
+                type: string
+                format: uri
+              expiresAt:
+                type: string
+                format: date-time
+
+    DashboardOverview:
+      type: object
+      required:
+        - company
+        - campaign
+        - sampleSize
+        - minimumGroupSize
+        - kpis
+        - sentimentDistribution
+        - categoryScores
+        - satisfactionTrend
+        - departmentHeatmap
+        - topTopics
+        - aiSummary
+        - recommendedActions
+      properties:
+        company:
+          $ref: "#/components/schemas/CompanyReference"
+        campaign:
+          $ref: "#/components/schemas/CampaignReference"
+        sampleSize:
+          type: integer
+        minimumGroupSize:
+          type: integer
+        kpis:
+          type: array
+          items:
+            $ref: "#/components/schemas/Kpi"
+        sentimentDistribution:
+          type: array
+          items:
+            $ref: "#/components/schemas/SentimentDistribution"
+        categoryScores:
+          type: array
+          items:
+            $ref: "#/components/schemas/CategoryScore"
+        satisfactionTrend:
+          type: array
+          items:
+            $ref: "#/components/schemas/TrendPoint"
+        departmentHeatmap:
+          type: array
+          items:
+            $ref: "#/components/schemas/DepartmentHeatmapEntry"
+        topTopics:
+          type: array
+          items:
+            $ref: "#/components/schemas/Topic"
+        aiSummary:
+          $ref: "#/components/schemas/AiSummary"
+        recommendedActions:
+          type: array
+          items:
+            $ref: "#/components/schemas/ActionItem"
+
+    DepartmentDashboard:
+      type: object
+      required:
+        - department
+        - campaignId
+        - sampleSize
+        - minimumGroupSize
+        - visible
+      properties:
+        department:
+          $ref: "#/components/schemas/DepartmentReference"
+        campaignId:
+          type: string
+          format: uuid
+        sampleSize:
+          type: integer
+        minimumGroupSize:
+          type: integer
+        visible:
+          type: boolean
+        suppressionReason:
+          type: string
+          nullable: true
+          enum: [MINIMUM_GROUP_SIZE_NOT_REACHED]
+        overallSatisfaction:
+          type: number
+          format: double
+          nullable: true
+        companyAverage:
+          type: number
+          format: double
+          nullable: true
+        categoryScores:
+          type: array
+          items:
+            $ref: "#/components/schemas/DepartmentCategoryScore"
+        trend:
+          type: array
+          items:
+            $ref: "#/components/schemas/TrendPoint"
+        topTopics:
+          type: array
+          items:
+            $ref: "#/components/schemas/Topic"
+
+    CompanyReference:
+      type: object
+      required: [id, name]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+
+    CampaignReference:
+      type: object
+      required: [id, name, startsAt, endsAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        startsAt:
+          type: string
+          format: date-time
+        endsAt:
+          type: string
+          format: date-time
+
+    Kpi:
+      type: object
+      required: [key, label, value, unit]
+      properties:
+        key:
+          type: string
+        label:
+          type: string
+        value:
+          type: number
+        unit:
+          type: string
+          enum: [OUT_OF_5, PERCENT, COUNT]
+        detail:
+          type: string
+          nullable: true
+        change:
+          type: number
+          nullable: true
+        changeLabel:
+          type: string
+          nullable: true
+
+    SentimentDistribution:
+      type: object
+      required: [sentiment, percentage, count]
+      properties:
+        sentiment:
+          $ref: "#/components/schemas/Sentiment"
+        percentage:
+          type: number
+        count:
+          type: integer
+
+    CategoryScore:
+      type: object
+      required: [category, label, score, previousScore, sampleSize]
+      properties:
+        category:
+          type: string
+        label:
+          type: string
+        score:
+          type: number
+          format: double
+        previousScore:
+          type: number
+          format: double
+          nullable: true
+        sampleSize:
+          type: integer
+
+    DepartmentCategoryScore:
+      type: object
+      required: [category, label, score]
+      properties:
+        category:
+          type: string
+        label:
+          type: string
+        score:
+          type: number
+          format: double
+        companyScore:
+          type: number
+          format: double
+          nullable: true
+
+    TrendPoint:
+      type: object
+      required: [period, score]
+      properties:
+        period:
+          type: string
+          example: 2026-06
+        label:
+          type: string
+          nullable: true
+        score:
+          type: number
+          format: double
+        sampleSize:
+          type: integer
+          nullable: true
+
+    DepartmentHeatmapEntry:
+      type: object
+      required: [departmentId, departmentName, sampleSize]
+      properties:
+        departmentId:
+          type: string
+          format: uuid
+        departmentName:
+          type: string
+        sampleSize:
+          type: integer
+        suppressed:
+          type: boolean
+          default: false
+        suppressionReason:
+          type: string
+          nullable: true
+        scores:
+          type: object
+          nullable: true
+          additionalProperties:
+            type: number
+            format: double
+
+    Topic:
+      type: object
+      required: [label, mentions, sentiment, priority]
+      properties:
+        id:
+          type: string
+          format: uuid
+          nullable: true
+        category:
+          type: string
+          nullable: true
+        label:
+          type: string
+        mentions:
+          type: integer
+        sentiment:
+          $ref: "#/components/schemas/Sentiment"
+        priority:
+          $ref: "#/components/schemas/Priority"
+        trendPercentage:
+          type: number
+          nullable: true
+
+    AiSummary:
+      type: object
+      required: [summary, generatedAt, model, disclaimer]
+      properties:
+        summary:
+          type: string
+        generatedAt:
+          type: string
+          format: date-time
+        model:
+          type: string
+        disclaimer:
+          type: string
+
+    ActionItem:
+      type: object
+      required: [id, title, description, category, priority, status, source]
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        priority:
+          $ref: "#/components/schemas/Priority"
+        status:
+          type: string
+          enum: [OPEN, IN_PROGRESS, DONE, DISMISSED]
+        source:
+          type: string
+          enum: [AI, MANUAL]
+
+    ModerationSummary:
+      type: object
+      required: [submissionId, status, submittedAt, riskLevel]
+      properties:
+        submissionId:
+          type: string
+          format: uuid
+        status:
+          $ref: "#/components/schemas/SubmissionStatus"
+        submittedAt:
+          type: string
+          format: date-time
+        riskLevel:
+          type: string
+          enum: [LOW, MEDIUM, HIGH]
+
+    ModerationDetail:
+      allOf:
+        - $ref: "#/components/schemas/ModerationSummary"
+        - type: object
+          properties:
+            summary:
+              type: string
+            findings:
+              type: array
+              items:
+                type: object
+                additionalProperties: true
+
+    DepartmentReference:
+      type: object
+      required: [id, name]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+
+    ApiError:
+      type: object
+      required: [timestamp, status, code, message, path, fieldErrors]
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+        code:
+          type: string
+        message:
+          type: string
+        path:
+          type: string
+        fieldErrors:
+          type: array
+          items:
+            type: object
+            required: [field, message]
+            properties:
+              field:
+                type: string
+              message:
+                type: string
+
+    SurveyType:
+      type: string
+      enum: [PULSE, EXIT]
+
+    SurveyStatus:
+      type: string
+      enum: [DRAFT, PUBLISHED, ARCHIVED]
+
+    QuestionType:
+      type: string
+      enum: [RATING, SINGLE_CHOICE, MULTI_CHOICE, BOOLEAN, TEXT]
+
+    Sentiment:
+      type: string
+      enum: [POSITIVE, NEUTRAL, NEGATIVE]
+
+    Priority:
+      type: string
+      enum: [LOW, MEDIUM, HIGH]
+
+    SubmissionStatus:
+      type: string
+      enum:
+        [RECEIVED, ANALYZING, REVIEW_PENDING, APPROVED, REJECTED, ANALYSIS_FAILED]

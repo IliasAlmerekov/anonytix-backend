@@ -1,0 +1,268 @@
+{
+  "company": {
+    "id": "10729623-735e-4382-854f-33e3450bdac7",
+    "name": "Anonytix Demo GmbH"
+  },
+  "campaign": {
+    "id": "93b6108f-f005-4f4b-8ce9-952fa0a7ddc4",
+    "name": "Mitarbeiterbefragung Juni 2026",
+    "startsAt": "2026-06-01T00:00:00Z",
+    "endsAt": "2026-06-20T21:59:59Z"
+  },
+  "sampleSize": 127,
+  "minimumGroupSize": 5,
+  "kpis": [
+    {
+      "key": "OVERALL_SATISFACTION",
+      "label": "Gesamtzufriedenheit",
+      "value": 3.4,
+      "unit": "OUT_OF_5",
+      "change": -0.4,
+      "changeLabel": "seit der letzten Befragung"
+    },
+    {
+      "key": "PARTICIPATION_RATE",
+      "label": "Teilnahmequote",
+      "value": 78,
+      "unit": "PERCENT",
+      "change": 6,
+      "changeLabel": "gegenüber der letzten Befragung"
+    },
+    {
+      "key": "POSITIVE_SENTIMENT",
+      "label": "Positive Stimmung",
+      "value": 54,
+      "unit": "PERCENT",
+      "change": -8,
+      "changeLabel": "gegenüber der letzten Befragung"
+    },
+    {
+      "key": "CRITICAL_TOPICS",
+      "label": "Kritische Themen",
+      "value": 3,
+      "unit": "COUNT",
+      "change": 1,
+      "changeLabel": "neues kritisches Thema"
+    },
+    {
+      "key": "STRONGEST_CATEGORY",
+      "label": "Stärkster Bereich",
+      "value": 4.3,
+      "unit": "OUT_OF_5",
+      "detail": "Teamzusammenhalt"
+    },
+    {
+      "key": "WEAKEST_CATEGORY",
+      "label": "Schwächster Bereich",
+      "value": 2.1,
+      "unit": "OUT_OF_5",
+      "detail": "Arbeitsbelastung"
+    },
+    {
+      "key": "OPEN_ACTIONS",
+      "label": "Offene Maßnahmen",
+      "value": 5,
+      "unit": "COUNT",
+      "change": -2,
+      "changeLabel": "seit letzter Woche"
+    },
+    {
+      "key": "RECOMMENDATION_RATE",
+      "label": "Weiterempfehlung",
+      "value": 64,
+      "unit": "PERCENT",
+      "change": -3,
+      "changeLabel": "gegenüber der letzten Befragung"
+    }
+  ],
+  "sentimentDistribution": [
+    {
+      "sentiment": "POSITIVE",
+      "percentage": 54,
+      "count": 69
+    },
+    {
+      "sentiment": "NEUTRAL",
+      "percentage": 15,
+      "count": 19
+    },
+    {
+      "sentiment": "NEGATIVE",
+      "percentage": 31,
+      "count": 39
+    }
+  ],
+  "categoryScores": [
+    {
+      "category": "TEAMWORK",
+      "label": "Teamzusammenhalt",
+      "score": 4.3,
+      "previousScore": 4.1,
+      "sampleSize": 125
+    },
+    {
+      "category": "WORK_ENVIRONMENT",
+      "label": "Arbeitsumgebung",
+      "score": 3.8,
+      "previousScore": 3.7,
+      "sampleSize": 121
+    },
+    {
+      "category": "COMMUNICATION",
+      "label": "Kommunikation",
+      "score": 3.1,
+      "previousScore": 3.5,
+      "sampleSize": 123
+    },
+    {
+      "category": "LEADERSHIP",
+      "label": "Führung",
+      "score": 2.8,
+      "previousScore": 3.2,
+      "sampleSize": 119
+    },
+    {
+      "category": "WORKLOAD",
+      "label": "Arbeitsbelastung",
+      "score": 2.1,
+      "previousScore": 2.7,
+      "sampleSize": 126
+    }
+  ],
+  "satisfactionTrend": [
+    {
+      "period": "2026-01",
+      "label": "Januar",
+      "score": 3.8,
+      "sampleSize": 104
+    },
+    {
+      "period": "2026-02",
+      "label": "Februar",
+      "score": 3.7,
+      "sampleSize": 109
+    },
+    {
+      "period": "2026-03",
+      "label": "März",
+      "score": 3.6,
+      "sampleSize": 112
+    },
+    {
+      "period": "2026-04",
+      "label": "April",
+      "score": 3.5,
+      "sampleSize": 118
+    },
+    {
+      "period": "2026-05",
+      "label": "Mai",
+      "score": 3.8,
+      "sampleSize": 124
+    },
+    {
+      "period": "2026-06",
+      "label": "Juni",
+      "score": 3.4,
+      "sampleSize": 127
+    }
+  ],
+  "departmentHeatmap": [
+    {
+      "departmentId": "ac38af63-dc5a-416e-b5d7-c237535ec37b",
+      "departmentName": "Softwareentwicklung",
+      "sampleSize": 34,
+      "scores": {
+        "LEADERSHIP": 3.2,
+        "WORKLOAD": 2.3,
+        "COMMUNICATION": 3.5,
+        "TEAMWORK": 4.4
+      }
+    },
+    {
+      "departmentId": "6a095a71-c076-4f35-98bd-4ec01937be84",
+      "departmentName": "Vertrieb",
+      "sampleSize": 29,
+      "scores": {
+        "LEADERSHIP": 2.4,
+        "WORKLOAD": 1.9,
+        "COMMUNICATION": 2.7,
+        "TEAMWORK": 3.8
+      }
+    },
+    {
+      "departmentId": "fedc9e7d-d917-4626-ab79-ec69c583814e",
+      "departmentName": "Marketing",
+      "sampleSize": 18,
+      "scores": {
+        "LEADERSHIP": 3.6,
+        "WORKLOAD": 3.1,
+        "COMMUNICATION": 3.7,
+        "TEAMWORK": 4.2
+      }
+    },
+    {
+      "departmentId": "d2f7524e-6e27-48dc-83ea-4ba9bfe716ca",
+      "departmentName": "Personal",
+      "sampleSize": 4,
+      "suppressed": true,
+      "suppressionReason": "MINIMUM_GROUP_SIZE_NOT_REACHED",
+      "scores": null
+    }
+  ],
+  "topTopics": [
+    {
+      "id": "2b0da087-d18d-48f0-bbab-a77d97dd5d70",
+      "category": "WORKLOAD",
+      "label": "Hohe Arbeitsbelastung",
+      "mentions": 38,
+      "sentiment": "NEGATIVE",
+      "priority": "HIGH",
+      "trendPercentage": 27
+    },
+    {
+      "id": "32fd1ee4-f8b6-4fbb-91ae-1fe598d2c6b1",
+      "category": "COMMUNICATION",
+      "label": "Unklare Kommunikation",
+      "mentions": 24,
+      "sentiment": "NEGATIVE",
+      "priority": "HIGH",
+      "trendPercentage": 14
+    },
+    {
+      "id": "b17a31e6-fe40-4d37-9be1-021a01ec19e2",
+      "category": "TEAMWORK",
+      "label": "Guter Teamzusammenhalt",
+      "mentions": 21,
+      "sentiment": "POSITIVE",
+      "priority": "LOW",
+      "trendPercentage": 9
+    }
+  ],
+  "aiSummary": {
+    "summary": "Die Gesamtzufriedenheit ist im Juni gesunken. Besonders auffällig sind die hohe Arbeitsbelastung im Vertrieb und eine schlechter bewertete Führungskommunikation. Der Teamzusammenhalt wird weiterhin überwiegend positiv bewertet.",
+    "generatedAt": "2026-06-06T12:00:00Z",
+    "model": "demo-model",
+    "disclaimer": "KI-generierte Zusammenfassung auf Basis anonymisierter und aggregierter Daten."
+  },
+  "recommendedActions": [
+    {
+      "id": "045c5d71-a61a-42d8-8958-c3fd781c28f2",
+      "title": "Arbeitsbelastung im Vertrieb prüfen",
+      "description": "Aufgabenverteilung und Kapazitäten im Vertrieb analysieren und kurzfristig priorisieren.",
+      "category": "WORKLOAD",
+      "priority": "HIGH",
+      "status": "OPEN",
+      "source": "AI"
+    },
+    {
+      "id": "b948863b-f42f-41e1-afba-3078233bcfa8",
+      "title": "Führungskommunikation verbessern",
+      "description": "Regelmäßige Team-Updates und klare Verantwortlichkeiten für Entscheidungen einführen.",
+      "category": "LEADERSHIP",
+      "priority": "HIGH",
+      "status": "IN_PROGRESS",
+      "source": "AI"
+    }
+  ]
+}

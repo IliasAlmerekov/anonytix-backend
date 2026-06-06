@@ -1,0 +1,6 @@
+{
+  "title": "Mitarbeiterbefragung Juli 2026",
+  "description": "Monatliche anonyme Pulsbefragung",
+  "type": "PULSE",
+  "templateKey": "EMPLOYEE_SATISFACTION"
+}
