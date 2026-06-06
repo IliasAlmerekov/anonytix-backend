@@ -1,0 +1,12 @@
+.git
+.github
+.idea
+.vscode
+.DS_Store
+.env
+target
+docs
+frontend-mocks
+README.md
+PRODUCT.md
+compose.yaml

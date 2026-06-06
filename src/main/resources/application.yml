@@ -21,6 +21,9 @@ spring:
         speech: none
         transcription: none
 
+server:
+  port: ${PORT:8080}
+
 anonytix:
   frontend-url: ${FRONTEND_URL:https://anonytix.app}
   cors-origins: ${CORS_ORIGINS:http://localhost:5173,https://anonytix.app}
