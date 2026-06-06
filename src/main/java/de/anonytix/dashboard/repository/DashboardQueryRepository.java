@@ -53,6 +53,10 @@ public class DashboardQueryRepository {
                 WHERE c.id = ?
                 """ + campaignFilter + yearFilter + """
                 ORDER BY
+                  CASE WHEN EXISTS (
+                      SELECT 1 FROM feedback_submissions fs
+                      WHERE fs.campaign_id = ca.id AND fs.status = 'APPROVED'
+                  ) THEN 0 ELSE 1 END,
                   CASE ca.status WHEN 'ACTIVE' THEN 1 WHEN 'SCHEDULED' THEN 2 ELSE 3 END,
                   ca.starts_at DESC
                 LIMIT 1
