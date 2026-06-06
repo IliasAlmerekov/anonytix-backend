@@ -75,4 +75,50 @@ class DatabaseMigrationTest {
         assertThat(companies).isEqualTo(1);
         assertThat(campaigns).isEqualTo(1);
     }
+
+    @Test
+    void seedsDashboardDemoDataForThreeYears() {
+        List<Integer> years = jdbcTemplate.queryForList(
+                """
+                SELECT DISTINCT EXTRACT(YEAR FROM submitted_at)::integer
+                FROM feedback_submissions
+                WHERE company_id = '10729623-735e-4382-854f-33e3450bdac7'
+                  AND status = 'APPROVED'
+                ORDER BY 1
+                """,
+                Integer.class);
+        Integer sufficientlyLargeDepartmentYears = jdbcTemplate.queryForObject(
+                """
+                SELECT count(*)
+                FROM (
+                    SELECT department_id,
+                           EXTRACT(YEAR FROM submitted_at)::integer AS year
+                    FROM feedback_submissions
+                    WHERE company_id = '10729623-735e-4382-854f-33e3450bdac7'
+                      AND status = 'APPROVED'
+                    GROUP BY department_id, EXTRACT(YEAR FROM submitted_at)
+                    HAVING count(*) >= 5
+                ) grouped_feedback
+                """,
+                Integer.class);
+        Integer submissions = jdbcTemplate.queryForObject(
+                "SELECT count(*) FROM feedback_submissions",
+                Integer.class);
+        Integer answers = jdbcTemplate.queryForObject(
+                "SELECT count(*) FROM answers",
+                Integer.class);
+        Integer analyses = jdbcTemplate.queryForObject(
+                "SELECT count(*) FROM ai_analyses",
+                Integer.class);
+        Integer findings = jdbcTemplate.queryForObject(
+                "SELECT count(*) FROM analysis_findings",
+                Integer.class);
+
+        assertThat(years).containsExactly(2024, 2025, 2026);
+        assertThat(sufficientlyLargeDepartmentYears).isEqualTo(12);
+        assertThat(submissions).isGreaterThanOrEqualTo(288);
+        assertThat(answers).isGreaterThanOrEqualTo(submissions * 6);
+        assertThat(analyses).isEqualTo(submissions);
+        assertThat(findings).isEqualTo(submissions);
+    }
 }

@@ -33,17 +33,7 @@ class PublicFeedbackApiTest extends AbstractIntegrationTest {
 
     @BeforeEach
     void cleanAndSeedCompany() {
-        jdbcTemplate.update("DELETE FROM answer_selected_options");
-        jdbcTemplate.update("DELETE FROM answers");
-        jdbcTemplate.update("DELETE FROM feedback_submissions");
-        jdbcTemplate.update("DELETE FROM invitations");
-        jdbcTemplate.update("DELETE FROM campaigns");
-        jdbcTemplate.update("DELETE FROM question_departments");
-        jdbcTemplate.update("DELETE FROM question_options");
-        jdbcTemplate.update("DELETE FROM questions");
-        jdbcTemplate.update("DELETE FROM surveys");
-        jdbcTemplate.update("DELETE FROM departments");
-        jdbcTemplate.update("DELETE FROM companies");
+        cleanDatabase(jdbcTemplate);
         Timestamp now = Timestamp.from(Instant.now());
         jdbcTemplate.update(
                 """
