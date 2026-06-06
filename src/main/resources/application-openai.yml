@@ -7,7 +7,15 @@ spring:
       chat:
         options:
           model: ${OPENAI_MODEL:gpt-4o-mini}
-          temperature: 0.1
+          temperature: ${OPENAI_TEMPERATURE:0.1}
+          max-completion-tokens: ${OPENAI_MAX_COMPLETION_TOKENS:1200}
+          store: false
+    retry:
+      max-attempts: ${OPENAI_RETRY_MAX_ATTEMPTS:3}
+      backoff:
+        initial-interval: 1s
+        max-interval: 10s
+        multiplier: 2
 
 anonytix:
   ai:

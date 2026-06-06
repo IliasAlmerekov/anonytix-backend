@@ -14,6 +14,8 @@ WORKDIR /app
 
 COPY --from=build /app/target/app.jar app.jar
 
+ENV SPRING_PROFILES_ACTIVE=openai
+
 EXPOSE 8080
 
 USER 10001:10001
