@@ -86,6 +86,19 @@ public final class DashboardTypes {
             String disclaimer) {
     }
 
+    public record MonthlyFeedback(
+            String period,
+            String label,
+            int positive,
+            int negative) {
+    }
+
+    public record AiHighlight(
+            UUID id,
+            String text,
+            String sentiment) {
+    }
+
     public record ActionItem(
             UUID id,
             String title,

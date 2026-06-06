@@ -23,6 +23,7 @@ class DashboardApiTest extends AbstractIntegrationTest {
     private static final UUID SURVEY_ID = UUID.randomUUID();
     private static final UUID QUESTION_ID = UUID.randomUUID();
     private static final UUID CAMPAIGN_ID = UUID.randomUUID();
+    private static final UUID HISTORICAL_CAMPAIGN_ID = UUID.randomUUID();
 
     @Autowired
     private TestRestTemplate restTemplate;
@@ -81,6 +82,29 @@ class DashboardApiTest extends AbstractIntegrationTest {
                 """,
                 CAMPAIGN_ID, COMPANY_ID, SURVEY_ID,
                 now, Timestamp.from(Instant.parse("2026-06-30T22:00:00Z")), now, now);
+        jdbcTemplate.update(
+                """
+                INSERT INTO campaigns(
+                    id, company_id, survey_id, name, status, starts_at, ends_at,
+                    created_at, updated_at)
+                VALUES (?, ?, ?, 'Juni 2025', 'CLOSED', ?, ?, ?, ?)
+                """,
+                HISTORICAL_CAMPAIGN_ID,
+                COMPANY_ID,
+                SURVEY_ID,
+                Timestamp.from(Instant.parse("2025-06-01T00:00:00Z")),
+                Timestamp.from(Instant.parse("2025-06-30T22:00:00Z")),
+                Timestamp.from(Instant.parse("2025-06-01T00:00:00Z")),
+                Timestamp.from(Instant.parse("2025-06-30T22:00:00Z")));
+        insertApprovedSubmission(
+                HISTORICAL_CAMPAIGN_ID,
+                VISIBLE_DEPARTMENT_ID,
+                3,
+                "NEGATIVE",
+                "Historische Arbeitsbelastung",
+                "WORKLOAD",
+                "HIGH",
+                Timestamp.from(Instant.parse("2025-06-15T12:00:00Z")));
 
         for (int index = 0; index < 5; index++) {
             insertApprovedSubmission(
@@ -116,6 +140,8 @@ class DashboardApiTest extends AbstractIntegrationTest {
         JsonNode body = response.getBody();
         assertThat(body.path("sampleSize").asInt()).isEqualTo(9);
         assertThat(body.path("minimumGroupSize").asInt()).isEqualTo(5);
+        assertThat(body.path("years")).extracting(JsonNode::asInt)
+                .containsExactly(2026);
         assertThat(body.path("sentimentDistribution")).hasSize(3);
         JsonNode hidden = findDepartment(body, HIDDEN_DEPARTMENT_ID);
         assertThat(hidden.path("suppressed").asBoolean()).isTrue();
@@ -145,6 +171,30 @@ class DashboardApiTest extends AbstractIntegrationTest {
         assertThat(response.getBody().path("topTopics")).isEmpty();
     }
 
+    @Test
+    void reloadsDashboardForSelectedYearWithoutCampaignId() {
+        ResponseEntity<JsonNode> response = restTemplate.getForEntity(
+                "/api/v1/companies/{companyId}/dashboard/overview?year=2025",
+                JsonNode.class,
+                COMPANY_ID);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        JsonNode body = response.getBody();
+        assertThat(body.path("campaign").path("id").asText())
+                .isEqualTo(HISTORICAL_CAMPAIGN_ID.toString());
+        assertThat(body.path("selectedYear").asInt()).isEqualTo(2025);
+        assertThat(body.path("sampleSize").asInt()).isEqualTo(1);
+        assertThat(body.path("years")).extracting(JsonNode::asInt)
+                .containsExactly(2025, 2026);
+        assertThat(body.path("feedbackByMonth")).hasSize(1);
+        assertThat(body.path("feedbackByMonth").get(0).path("period").asText())
+                .isEqualTo("2025-06");
+        assertThat(body.path("feedbackByMonth").get(0).path("negative").asInt())
+                .isEqualTo(1);
+        assertThat(body.path("satisfactionByYear")).hasSize(12);
+        assertThat(body.path("aiHighlights")).isNotEmpty();
+    }
+
     private JsonNode findDepartment(JsonNode body, UUID departmentId) {
         for (JsonNode department : body.path("departmentHeatmap")) {
             if (department.path("departmentId").asText().equals(departmentId.toString())) {
@@ -171,6 +221,26 @@ class DashboardApiTest extends AbstractIntegrationTest {
             String category,
             String priority,
             Timestamp submittedAt) {
+        insertApprovedSubmission(
+                CAMPAIGN_ID,
+                departmentId,
+                rating,
+                sentiment,
+                topic,
+                category,
+                priority,
+                submittedAt);
+    }
+
+    private void insertApprovedSubmission(
+            UUID campaignId,
+            UUID departmentId,
+            int rating,
+            String sentiment,
+            String topic,
+            String category,
+            String priority,
+            Timestamp submittedAt) {
         UUID submissionId = UUID.randomUUID();
         UUID analysisId = UUID.randomUUID();
         jdbcTemplate.update(
@@ -179,7 +249,7 @@ class DashboardApiTest extends AbstractIntegrationTest {
                     id, company_id, campaign_id, department_id, status, submitted_at)
                 VALUES (?, ?, ?, ?, 'APPROVED', ?)
                 """,
-                submissionId, COMPANY_ID, CAMPAIGN_ID, departmentId, submittedAt);
+                submissionId, COMPANY_ID, campaignId, departmentId, submittedAt);
         jdbcTemplate.update(
                 """
                 INSERT INTO answers(

@@ -380,6 +380,7 @@ paths:
       parameters:
         - $ref: "#/components/parameters/CompanyId"
         - $ref: "#/components/parameters/CampaignIdQuery"
+        - $ref: "#/components/parameters/YearQuery"
       responses:
         "200":
           description: Dashboard-Daten
@@ -398,6 +399,7 @@ paths:
         - $ref: "#/components/parameters/CompanyId"
         - $ref: "#/components/parameters/DepartmentId"
         - $ref: "#/components/parameters/CampaignIdQuery"
+        - $ref: "#/components/parameters/YearQuery"
       responses:
         "200":
           description: Abteilungsdashboard oder unterdrückte Statistik
@@ -533,10 +535,20 @@ components:
     CampaignIdQuery:
       name: campaignId
       in: query
-      required: true
+      required: false
+      description: Ohne Wert wird die neueste passende Kampagne gewählt.
       schema:
         type: string
         format: uuid
+    YearQuery:
+      name: year
+      in: query
+      required: false
+      description: Filtert alle Dashboard-Aggregate auf das gewählte Kalenderjahr.
+      schema:
+        type: integer
+        minimum: 2000
+        maximum: 2100
     SubmissionId:
       name: submissionId
       in: path
@@ -916,21 +928,32 @@ components:
       required:
         - company
         - campaign
+        - selectedYear
+        - years
         - sampleSize
         - minimumGroupSize
         - kpis
         - sentimentDistribution
         - categoryScores
         - satisfactionTrend
+        - feedbackByMonth
+        - satisfactionByYear
         - departmentHeatmap
         - topTopics
         - aiSummary
+        - aiHighlights
         - recommendedActions
       properties:
         company:
           $ref: "#/components/schemas/CompanyReference"
         campaign:
           $ref: "#/components/schemas/CampaignReference"
+        selectedYear:
+          type: integer
+        years:
+          type: array
+          items:
+            type: integer
         sampleSize:
           type: integer
         minimumGroupSize:
@@ -951,6 +974,15 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/TrendPoint"
+        feedbackByMonth:
+          type: array
+          items:
+            $ref: "#/components/schemas/MonthlyFeedback"
+        satisfactionByYear:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
         departmentHeatmap:
           type: array
           items:
@@ -961,6 +993,10 @@ components:
             $ref: "#/components/schemas/Topic"
         aiSummary:
           $ref: "#/components/schemas/AiSummary"
+        aiHighlights:
+          type: array
+          items:
+            $ref: "#/components/schemas/AiHighlight"
         recommendedActions:
           type: array
           items:
@@ -1182,6 +1218,32 @@ components:
           type: string
         disclaimer:
           type: string
+
+    MonthlyFeedback:
+      type: object
+      required: [period, label, positive, negative]
+      properties:
+        period:
+          type: string
+          example: 2026-06
+        label:
+          type: string
+        positive:
+          type: integer
+        negative:
+          type: integer
+
+    AiHighlight:
+      type: object
+      required: [id, text, sentiment]
+      properties:
+        id:
+          type: string
+          format: uuid
+        text:
+          type: string
+        sentiment:
+          $ref: "#/components/schemas/Sentiment"
 
     ActionItem:
       type: object

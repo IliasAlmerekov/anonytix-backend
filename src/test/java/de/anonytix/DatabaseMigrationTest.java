@@ -53,4 +53,26 @@ class DatabaseMigrationTest {
                 "moderation_reviews",
                 "action_items");
     }
+
+    @Test
+    void seedsTheSingleTenantMvpDashboardContext() {
+        Integer companies = jdbcTemplate.queryForObject(
+                """
+                SELECT count(*)
+                FROM companies
+                WHERE id = '10729623-735e-4382-854f-33e3450bdac7'
+                """,
+                Integer.class);
+        Integer campaigns = jdbcTemplate.queryForObject(
+                """
+                SELECT count(*)
+                FROM campaigns
+                WHERE id = '93b6108f-f005-4f4b-8ce9-952fa0a7ddc4'
+                  AND status = 'ACTIVE'
+                """,
+                Integer.class);
+
+        assertThat(companies).isEqualTo(1);
+        assertThat(campaigns).isEqualTo(1);
+    }
 }

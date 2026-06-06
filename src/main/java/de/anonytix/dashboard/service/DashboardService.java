@@ -9,6 +9,7 @@ import de.anonytix.dashboard.dto.DashboardTypes.DepartmentCategoryScore;
 import de.anonytix.dashboard.dto.DashboardTypes.DepartmentHeatmapEntry;
 import de.anonytix.dashboard.dto.DashboardTypes.DepartmentReference;
 import de.anonytix.dashboard.dto.DashboardTypes.Kpi;
+import de.anonytix.dashboard.dto.DashboardTypes.MonthlyFeedback;
 import de.anonytix.dashboard.dto.DashboardTypes.SentimentDistribution;
 import de.anonytix.dashboard.dto.DashboardTypes.Topic;
 import de.anonytix.dashboard.dto.DashboardTypes.TrendPoint;
@@ -19,9 +20,11 @@ import de.anonytix.dashboard.repository.DashboardQueryRepository.DashboardContex
 import de.anonytix.dashboard.repository.DashboardQueryRepository.DepartmentAggregate;
 import de.anonytix.dashboard.repository.DashboardQueryRepository.DepartmentInfo;
 import de.anonytix.dashboard.repository.DashboardQueryRepository.TopicAggregate;
+import de.anonytix.dashboard.repository.DashboardQueryRepository.YearMonthSatisfactionAggregate;
 import de.anonytix.shared.error.ResourceNotFoundException;
 import java.time.Instant;
 import java.time.Month;
+import java.time.ZoneOffset;
 import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -50,27 +53,40 @@ public class DashboardService {
     }
 
     @Transactional(readOnly = true)
-    public DashboardOverviewResponse overview(UUID companyId, UUID campaignId) {
-        DashboardContext context = context(companyId, campaignId);
-        int sampleSize = repository.sampleSize(companyId, campaignId, null);
-        List<CategoryScore> categoryScores = categoryScores(companyId, campaignId);
+    public DashboardOverviewResponse overview(
+            UUID companyId,
+            UUID campaignId,
+            Integer year) {
+        DashboardContext context = context(companyId, campaignId, year);
+        UUID effectiveCampaignId = context.campaignId();
+        int sampleSize =
+                repository.sampleSize(companyId, effectiveCampaignId, null, year);
+        List<CategoryScore> categoryScores =
+                categoryScores(companyId, effectiveCampaignId, year);
         List<SentimentDistribution> sentiments =
-                sentiments(companyId, campaignId, sampleSize);
-        List<Topic> topics = topics(companyId, campaignId, null);
-        Double satisfaction =
-                repository.overallSatisfaction(companyId, campaignId, null);
+                sentiments(companyId, effectiveCampaignId, year, sampleSize);
+        List<Topic> topics =
+                topics(companyId, effectiveCampaignId, null, year);
+        Double satisfaction = repository.overallSatisfaction(
+                companyId, effectiveCampaignId, null, year);
         List<Kpi> kpis = kpis(
                 sampleSize,
                 satisfaction,
                 sentiments,
                 categoryScores,
                 topics,
-                repository.actionItems(companyId, campaignId).stream()
+                repository.actionItems(companyId, effectiveCampaignId).stream()
                         .filter(action -> !action.status().equals("DONE"))
                         .count());
         List<DepartmentHeatmapEntry> heatmap =
-                departmentHeatmap(context, companyId, campaignId);
-        Instant generatedAt = repository.latestAnalysisAt(companyId, campaignId);
+                departmentHeatmap(
+                        context, companyId, effectiveCampaignId, year);
+        Instant generatedAt = repository.latestAnalysisAt(
+                companyId, effectiveCampaignId, year);
+        List<Integer> years = repository.availableYears(companyId, campaignId);
+        int selectedYear = year == null
+                ? context.startsAt().atZone(ZoneOffset.UTC).getYear()
+                : year;
 
         return new DashboardOverviewResponse(
                 new CompanyReference(context.companyId(), context.companyName()),
@@ -79,12 +95,16 @@ public class DashboardService {
                         context.campaignName(),
                         context.startsAt(),
                         context.endsAt()),
+                selectedYear,
+                years,
                 sampleSize,
                 context.minimumGroupSize(),
                 kpis,
                 sentiments,
                 categoryScores,
-                trend(companyId, campaignId, null),
+                trend(companyId, effectiveCampaignId, null, year),
+                monthlyFeedback(companyId, effectiveCampaignId, year),
+                satisfactionByYear(companyId, years),
                 heatmap,
                 topics,
                 new AiSummary(
@@ -92,24 +112,28 @@ public class DashboardService {
                         generatedAt == null ? Instant.now() : generatedAt,
                         "aggregate-v1",
                         DISCLAIMER),
-                repository.actionItems(companyId, campaignId));
+                repository.aiHighlights(companyId, effectiveCampaignId, year),
+                repository.actionItems(companyId, effectiveCampaignId));
     }
 
     @Transactional(readOnly = true)
     public DepartmentDashboardResponse department(
             UUID companyId,
             UUID departmentId,
-            UUID campaignId) {
-        DashboardContext context = context(companyId, campaignId);
+            UUID campaignId,
+            Integer year) {
+        DashboardContext context = context(companyId, campaignId, year);
+        UUID effectiveCampaignId = context.campaignId();
         DepartmentInfo department = repository.findDepartment(companyId, departmentId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Abteilung " + departmentId + " wurde nicht gefunden."));
         int sampleSize =
-                repository.sampleSize(companyId, campaignId, departmentId);
+                repository.sampleSize(
+                        companyId, effectiveCampaignId, departmentId, year);
         if (sampleSize < context.minimumGroupSize()) {
             return new DepartmentDashboardResponse(
                     new DepartmentReference(department.id(), department.name()),
-                    campaignId,
+                    effectiveCampaignId,
                     sampleSize,
                     context.minimumGroupSize(),
                     false,
@@ -122,13 +146,14 @@ public class DashboardService {
         }
 
         Map<String, Double> companyScores = repository
-                .categoryScores(companyId, campaignId, null)
+                .categoryScores(companyId, effectiveCampaignId, null, year)
                 .stream()
                 .collect(Collectors.toMap(
                         CategoryAggregate::category,
                         aggregate -> round(aggregate.score())));
         List<DepartmentCategoryScore> scores = repository
-                .categoryScores(companyId, campaignId, departmentId)
+                .categoryScores(
+                        companyId, effectiveCampaignId, departmentId, year)
                 .stream()
                 .map(aggregate -> new DepartmentCategoryScore(
                         aggregate.category(),
@@ -138,22 +163,25 @@ public class DashboardService {
                 .toList();
         return new DepartmentDashboardResponse(
                 new DepartmentReference(department.id(), department.name()),
-                campaignId,
+                effectiveCampaignId,
                 sampleSize,
                 context.minimumGroupSize(),
                 true,
                 null,
                 nullableRound(repository.overallSatisfaction(
-                        companyId, campaignId, departmentId)),
+                        companyId, effectiveCampaignId, departmentId, year)),
                 nullableRound(repository.overallSatisfaction(
-                        companyId, campaignId, null)),
+                        companyId, effectiveCampaignId, null, year)),
                 scores,
-                trend(companyId, campaignId, departmentId),
-                topics(companyId, campaignId, departmentId));
+                trend(companyId, effectiveCampaignId, departmentId, year),
+                topics(companyId, effectiveCampaignId, departmentId, year));
     }
 
-    private DashboardContext context(UUID companyId, UUID campaignId) {
-        return repository.findContext(companyId, campaignId)
+    private DashboardContext context(
+            UUID companyId,
+            UUID campaignId,
+            Integer year) {
+        return repository.findContext(companyId, campaignId, year)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Dashboard-Kontext für Firma "
                                 + companyId
@@ -162,8 +190,13 @@ public class DashboardService {
                                 + " wurde nicht gefunden."));
     }
 
-    private List<CategoryScore> categoryScores(UUID companyId, UUID campaignId) {
-        return repository.categoryScores(companyId, campaignId, null).stream()
+    private List<CategoryScore> categoryScores(
+            UUID companyId,
+            UUID campaignId,
+            Integer year) {
+        return repository
+                .categoryScores(companyId, campaignId, null, year)
+                .stream()
                 .map(aggregate -> new CategoryScore(
                         aggregate.category(),
                         categoryLabel(aggregate.category()),
@@ -176,8 +209,11 @@ public class DashboardService {
     private List<SentimentDistribution> sentiments(
             UUID companyId,
             UUID campaignId,
+            Integer year,
             int sampleSize) {
-        Map<String, Integer> counts = repository.sentiments(companyId, campaignId).stream()
+        Map<String, Integer> counts = repository
+                .sentiments(companyId, campaignId, year)
+                .stream()
                 .collect(Collectors.toMap(
                         aggregate -> aggregate.sentiment(),
                         aggregate -> aggregate.count()));
@@ -194,16 +230,21 @@ public class DashboardService {
     private List<DepartmentHeatmapEntry> departmentHeatmap(
             DashboardContext context,
             UUID companyId,
-            UUID campaignId) {
+            UUID campaignId,
+            Integer year) {
         List<DepartmentHeatmapEntry> entries = new ArrayList<>();
         for (DepartmentAggregate department :
-                repository.departments(companyId, campaignId)) {
+                repository.departments(companyId, campaignId, year)) {
             boolean suppressed =
                     department.sampleSize() < context.minimumGroupSize();
             Map<String, Double> scores = null;
             if (!suppressed) {
                 scores = repository
-                        .categoryScores(companyId, campaignId, department.id())
+                        .categoryScores(
+                                companyId,
+                                campaignId,
+                                department.id(),
+                                year)
                         .stream()
                         .collect(Collectors.toMap(
                                 CategoryAggregate::category,
@@ -225,8 +266,11 @@ public class DashboardService {
     private List<Topic> topics(
             UUID companyId,
             UUID campaignId,
-            UUID departmentId) {
-        return repository.topTopics(companyId, campaignId, departmentId).stream()
+            UUID departmentId,
+            Integer year) {
+        return repository
+                .topTopics(companyId, campaignId, departmentId, year)
+                .stream()
                 .map(this::toTopic)
                 .toList();
     }
@@ -245,14 +289,63 @@ public class DashboardService {
     private List<TrendPoint> trend(
             UUID companyId,
             UUID campaignId,
-            UUID departmentId) {
-        return repository.trend(companyId, campaignId, departmentId).stream()
+            UUID departmentId,
+            Integer year) {
+        return repository
+                .trend(companyId, campaignId, departmentId, year)
+                .stream()
                 .map(point -> new TrendPoint(
                         point.period(),
                         monthLabel(point.period()),
                         round(point.score()),
                         point.sampleSize()))
                 .toList();
+    }
+
+    private List<MonthlyFeedback> monthlyFeedback(
+            UUID companyId,
+            UUID campaignId,
+            Integer year) {
+        return repository.monthlySentiments(companyId, campaignId, year).stream()
+                .map(point -> new MonthlyFeedback(
+                        point.period(),
+                        monthLabel(point.period()),
+                        point.positive(),
+                        point.negative()))
+                .toList();
+    }
+
+    private List<Map<String, Object>> satisfactionByYear(
+            UUID companyId,
+            List<Integer> years) {
+        Map<Integer, Map<Integer, Double>> scores = repository
+                .satisfactionByYear(companyId)
+                .stream()
+                .collect(Collectors.groupingBy(
+                        YearMonthSatisfactionAggregate::month,
+                        LinkedHashMap::new,
+                        Collectors.toMap(
+                                YearMonthSatisfactionAggregate::year,
+                                aggregate -> round(aggregate.score()),
+                                (left, right) -> left,
+                                LinkedHashMap::new)));
+        List<Map<String, Object>> rows = new ArrayList<>();
+        for (int month = 1; month <= 12; month++) {
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put(
+                    "month",
+                    Month.of(month)
+                            .getDisplayName(TextStyle.SHORT, Locale.GERMAN));
+            Map<Integer, Double> monthScores =
+                    scores.getOrDefault(month, Map.of());
+            for (Integer availableYear : years) {
+                row.put(
+                        availableYear.toString(),
+                        monthScores.get(availableYear));
+            }
+            rows.add(row);
+        }
+        return List.copyOf(rows);
     }
 
     private List<Kpi> kpis(

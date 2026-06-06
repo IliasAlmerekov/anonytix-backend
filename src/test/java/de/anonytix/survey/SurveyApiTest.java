@@ -37,6 +37,7 @@ class SurveyApiTest extends AbstractIntegrationTest {
 
     @BeforeEach
     void setUpCompany() {
+        jdbcTemplate.update("DELETE FROM campaigns");
         jdbcTemplate.update("DELETE FROM question_departments");
         jdbcTemplate.update("DELETE FROM question_options");
         jdbcTemplate.update("DELETE FROM questions");

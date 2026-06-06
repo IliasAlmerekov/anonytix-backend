@@ -23,15 +23,17 @@ public class DashboardController {
     @GetMapping("/overview")
     public DashboardOverviewResponse overview(
             @PathVariable UUID companyId,
-            @RequestParam UUID campaignId) {
-        return service.overview(companyId, campaignId);
+            @RequestParam(required = false) UUID campaignId,
+            @RequestParam(required = false) Integer year) {
+        return service.overview(companyId, campaignId, year);
     }
 
     @GetMapping("/departments/{departmentId}")
     public DepartmentDashboardResponse department(
             @PathVariable UUID companyId,
             @PathVariable UUID departmentId,
-            @RequestParam UUID campaignId) {
-        return service.department(companyId, departmentId, campaignId);
+            @RequestParam(required = false) UUID campaignId,
+            @RequestParam(required = false) Integer year) {
+        return service.department(companyId, departmentId, campaignId, year);
     }
 }
