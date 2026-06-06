@@ -4,10 +4,25 @@
   "title": "Mitarbeiterbefragung Juni 2026",
   "description": "Dein Feedback wird anonymisiert und nur zusammengefasst ausgewertet.",
   "surveyType": "PULSE",
-  "department": {
-    "id": "ac38af63-dc5a-416e-b5d7-c237535ec37b",
-    "name": "Softwareentwicklung"
-  },
+  "departments": [
+    {
+      "id": "ac38af63-dc5a-416e-b5d7-c237535ec37b",
+      "name": "Softwareentwicklung"
+    },
+    {
+      "id": "6a095a71-c076-4f35-98bd-4ec01937be84",
+      "name": "Vertrieb"
+    },
+    {
+      "id": "fedc9e7d-d917-4626-ab79-ec69c583814e",
+      "name": "Marketing"
+    },
+    {
+      "id": "d2f7524e-6e27-48dc-83ea-4ba9bfe716ca",
+      "name": "Personal"
+    }
+  ],
+  "selectedDepartmentId": null,
   "expiresAt": "2026-06-20T21:59:59Z",
   "questions": [
     {
@@ -66,25 +81,13 @@
       ]
     },
     {
-      "id": "cc36621b-c076-451b-923c-3e5580d94031",
-      "text": "Wie zufrieden bist du mit unseren Entwicklungsprozessen?",
-      "helpText": "Diese Frage wird nur der Abteilung Softwareentwicklung angezeigt.",
-      "type": "RATING",
-      "category": "PROCESSES",
-      "required": false,
-      "position": 4,
-      "minimumValue": 1,
-      "maximumValue": 5,
-      "options": []
-    },
-    {
       "id": "a53104ae-c34f-4248-af72-68c84cac07bc",
       "text": "Was funktioniert aktuell besonders gut?",
       "helpText": "Bitte nenne keine Namen oder andere identifizierende Informationen.",
       "type": "TEXT",
       "category": "POSITIVE_FEEDBACK",
       "required": false,
-      "position": 5,
+      "position": 4,
       "minimumValue": null,
       "maximumValue": null,
       "maximumLength": 2000,
@@ -98,7 +101,7 @@
       "type": "TEXT",
       "category": "IMPROVEMENT",
       "required": false,
-      "position": 6,
+      "position": 5,
       "minimumValue": null,
       "maximumValue": null,
       "maximumLength": 2000,

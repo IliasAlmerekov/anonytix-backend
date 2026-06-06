@@ -1,0 +1,19 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-anonytix}
+      POSTGRES_USER: ${POSTGRES_USER:-anonytix}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-anonytix}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-anonytix} -d ${POSTGRES_DB:-anonytix}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+volumes:
+  postgres-data:

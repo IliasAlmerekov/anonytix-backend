@@ -1,0 +1,34 @@
+spring:
+  application:
+    name: anonytix-backend
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/anonytix}
+    username: ${DB_USERNAME:anonytix}
+    password: ${DB_PASSWORD:anonytix}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
+  ai:
+    model:
+      chat: none
+      embedding: none
+      image: none
+      moderation: none
+      audio:
+        speech: none
+        transcription: none
+
+anonytix:
+  frontend-url: ${FRONTEND_URL:https://anonytix.app}
+  cors-origins: ${CORS_ORIGINS:http://localhost:5173,https://anonytix.app}
+  ai:
+    provider: ${AI_PROVIDER:demo}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

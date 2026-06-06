@@ -8,9 +8,16 @@
     {
       "method": "GET",
       "path": "/public/invitations/{token}/form",
-      "purpose": "Öffentliches Formular für einen Einladungslink laden",
+      "purpose": "Formulargrunddaten, Abteilungen und allgemeine Fragen laden",
       "successStatus": 200,
       "mockResponse": "public-form.json"
+    },
+    {
+      "method": "GET",
+      "path": "/public/invitations/{token}/form?departmentId={departmentId}",
+      "purpose": "Allgemeine und abteilungsspezifische Fragen laden",
+      "successStatus": 200,
+      "mockResponse": "public-form-department.json"
     },
     {
       "method": "POST",
@@ -24,7 +31,8 @@
       "method": "GET",
       "path": "/companies/{companyId}/departments",
       "purpose": "Abteilungen auflisten",
-      "successStatus": 200
+      "successStatus": 200,
+      "mockResponse": "departments.json"
     },
     {
       "method": "POST",
@@ -116,9 +124,10 @@
     {
       "method": "POST",
       "path": "/companies/{companyId}/campaigns/{campaignId}/invitations",
-      "purpose": "Einladungslinks je Abteilung erzeugen",
+      "purpose": "Einen allgemeinen Einladungslink erzeugen",
       "successStatus": 201,
-      "mockRequest": "requests/generate-invitations.json"
+      "mockRequest": "requests/generate-invitations.json",
+      "mockResponse": "invitation-response.json"
     },
     {
       "method": "GET",

@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Build a working Spring Boot backend for dynamic department-specific surveys, anonymous feedback submission, AI-assisted analysis, moderation, and aggregated dashboards matching `frontend-mocks/openapi.yaml`.
+**Goal:** Build a working Spring Boot backend for dynamic department-specific surveys, anonymous feedback submission through one general campaign link with department selection, AI-assisted analysis, moderation, and aggregated dashboards matching `frontend-mocks/openapi.yaml`.
 
-**Architecture:** The application is a Spring Modulith with domain-aligned top-level modules: `company`, `survey`, `campaign`, `feedback`, `analysis`, `moderation`, and `dashboard`. PostgreSQL is the single database, Flyway owns the schema, public feedback is token-based, and company dashboards only expose approved aggregates above the configured minimum group size. AI access is hidden behind a gateway with a deterministic demo implementation and an optional OpenAI-backed implementation.
+**Architecture:** The application is a Spring Modulith with domain-aligned top-level modules: `company`, `survey`, `campaign`, `feedback`, `analysis`, `moderation`, and `dashboard`. PostgreSQL is the single database, Flyway owns the schema, and each campaign exposes one general token-based invitation link. Employees select their department before department-specific questions are loaded, while company dashboards only expose approved aggregates above the configured minimum group size. AI access is hidden behind a gateway with a deterministic demo implementation and an optional OpenAI-backed implementation.
 
 **Tech Stack:** Java 21, Maven, Spring Boot 3.5.11, Spring Modulith 1.4.8, Spring AI 1.1.6, Spring Data JPA, PostgreSQL, Flyway, MapStruct 1.6.3, Bean Validation, Testcontainers, JUnit 5, AssertJ, Docker Compose.
 
@@ -452,9 +452,9 @@ Cover:
 ```text
 POST campaign only accepts PUBLISHED survey
 POST activate changes SCHEDULED to ACTIVE
-POST invitations creates requested count per department
+POST invitations creates one general invitation for the campaign
 database stores SHA-256 token hash, not clear token
-response exposes invitation URL exactly once
+response exposes token and invitation URL exactly once
 ```
 
 - [ ] **Step 2: Run test and verify RED**
@@ -478,8 +478,9 @@ Never log or persist clear tokens.
 
 - [ ] **Step 4: Implement campaign and invitation APIs**
 
-Invitation records contain campaign, department, token hash, status, expiry,
-and used timestamp. Validate that departments belong to the campaign company.
+Invitation records contain campaign, token hash, status, expiry, and used
+timestamp. They do not contain a department; the employee selects one when
+opening the form.
 
 - [ ] **Step 5: Run test and verify GREEN**
 
@@ -505,9 +506,11 @@ git commit -m "feat: add campaigns and anonymous invitations"
 Cover:
 
 ```text
-GET valid token returns general plus matching department questions
+GET valid token without department returns departments and general questions
+GET valid token with departmentId returns general plus matching department questions
 GET expired token returns 410 INVITATION_EXPIRED
 GET used token returns 409 INVITATION_ALREADY_USED
+POST requires a departmentId belonging to the campaign company
 POST validates required questions and value type
 POST creates submission and answers, then marks invitation USED atomically
 POST does not persist invitation ID on feedback submission
@@ -524,9 +527,10 @@ Expected: FAIL with 404.
 
 - [ ] **Step 3: Implement form loading**
 
-Resolve the invitation by SHA-256 hash, verify `ACTIVE`, expiry, campaign
-`ACTIVE`, and return active questions that either have no department mapping or
-match the invitation department.
+Resolve the invitation by SHA-256 hash and verify `ACTIVE`, expiry, and campaign
+`ACTIVE`. Without `departmentId`, return all active departments and only general
+questions. With `departmentId`, verify that it belongs to the campaign company
+and return general questions plus questions mapped to that department.
 
 - [ ] **Step 4: Implement transactional submission**
 
@@ -534,11 +538,12 @@ Within one `@Transactional` method:
 
 1. Lock invitation row.
 2. Revalidate token status.
-3. Validate every answer against its question type.
-4. Persist submission using company/campaign/department only.
-5. Persist answers and selected options.
-6. Mark invitation `USED`.
-7. Publish `FeedbackSubmitted(submissionId)`.
+3. Validate the submitted department ID against the campaign company.
+4. Validate every answer against its question type and department visibility.
+5. Persist submission using company/campaign/selected department only.
+6. Persist answers and selected options.
+7. Mark invitation `USED`.
+8. Publish `FeedbackSubmitted(submissionId)`.
 
 - [ ] **Step 5: Run test and verify GREEN**
 
@@ -804,4 +809,3 @@ Expected:
 git add README.md src/main/resources/db/migration/V2__insert_demo_data.sql src/test
 git commit -m "test: verify modular MVP end to end"
 ```
-

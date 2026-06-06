@@ -1,17 +1,3 @@
 {
-  "departments": [
-    {
-      "departmentId": "ac38af63-dc5a-416e-b5d7-c237535ec37b",
-      "amount": 35
-    },
-    {
-      "departmentId": "6a095a71-c076-4f35-98bd-4ec01937be84",
-      "amount": 30
-    },
-    {
-      "departmentId": "fedc9e7d-d917-4626-ab79-ec69c583814e",
-      "amount": 20
-    }
-  ],
   "expiresAt": "2026-07-14T21:59:59Z"
 }

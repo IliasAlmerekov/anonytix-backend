@@ -21,6 +21,7 @@ paths:
       summary: Öffentliches Formular laden
       parameters:
         - $ref: "#/components/parameters/InvitationToken"
+        - $ref: "#/components/parameters/DepartmentIdQuery"
       responses:
         "200":
           description: Dynamisches Formular
@@ -354,7 +355,7 @@ paths:
   /companies/{companyId}/campaigns/{campaignId}/invitations:
     post:
       tags: [Campaigns]
-      summary: Einladungslinks je Abteilung erzeugen
+      summary: Allgemeinen Einladungslink erzeugen
       parameters:
         - $ref: "#/components/parameters/CompanyId"
         - $ref: "#/components/parameters/CampaignId"
@@ -366,11 +367,11 @@ paths:
               $ref: "#/components/schemas/GenerateInvitationsRequest"
       responses:
         "201":
-          description: Erzeugte Einladungen
+          description: Erzeugter allgemeiner Einladungslink
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/InvitationBatchResponse"
+                $ref: "#/components/schemas/InvitationResponse"
 
   /companies/{companyId}/dashboard/overview:
     get:
@@ -497,6 +498,14 @@ components:
       name: departmentId
       in: path
       required: true
+      schema:
+        type: string
+        format: uuid
+    DepartmentIdQuery:
+      name: departmentId
+      in: query
+      required: false
+      description: Lädt zusätzlich die Fragen der ausgewählten Abteilung.
       schema:
         type: string
         format: uuid
@@ -758,7 +767,7 @@ components:
     PublicSurveyForm:
       type: object
       required:
-        [campaignId, surveyId, title, surveyType, department, expiresAt, questions]
+        [campaignId, surveyId, title, surveyType, departments, expiresAt, questions]
       properties:
         campaignId:
           type: string
@@ -773,8 +782,15 @@ components:
           nullable: true
         surveyType:
           $ref: "#/components/schemas/SurveyType"
-        department:
-          $ref: "#/components/schemas/DepartmentReference"
+        departments:
+          type: array
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/DepartmentReference"
+        selectedDepartmentId:
+          type: string
+          format: uuid
+          nullable: true
         expiresAt:
           type: string
           format: date-time
@@ -785,8 +801,11 @@ components:
 
     SubmitFeedbackRequest:
       type: object
-      required: [answers]
+      required: [departmentId, answers]
       properties:
+        departmentId:
+          type: string
+          format: uuid
         answers:
           type: array
           minItems: 1
@@ -870,46 +889,27 @@ components:
 
     GenerateInvitationsRequest:
       type: object
-      required: [departments, expiresAt]
+      required: [expiresAt]
       properties:
-        departments:
-          type: array
-          items:
-            type: object
-            required: [departmentId, amount]
-            properties:
-              departmentId:
-                type: string
-                format: uuid
-              amount:
-                type: integer
-                minimum: 1
         expiresAt:
           type: string
           format: date-time
 
-    InvitationBatchResponse:
+    InvitationResponse:
       type: object
-      required: [campaignId, invitations]
+      required: [campaignId, token, url, expiresAt]
       properties:
         campaignId:
           type: string
           format: uuid
-        invitations:
-          type: array
-          items:
-            type: object
-            required: [departmentId, url, expiresAt]
-            properties:
-              departmentId:
-                type: string
-                format: uuid
-              url:
-                type: string
-                format: uri
-              expiresAt:
-                type: string
-                format: date-time
+        token:
+          type: string
+        url:
+          type: string
+          format: uri
+        expiresAt:
+          type: string
+          format: date-time
 
     DashboardOverview:
       type: object

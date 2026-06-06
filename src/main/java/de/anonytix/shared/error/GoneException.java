@@ -1,0 +1,15 @@
+package de.anonytix.shared.error;
+
+public class GoneException extends RuntimeException {
+
+    private final String code;
+
+    public GoneException(String code, String message) {
+        super(message);
+        this.code = code;
+    }
+
+    public String getCode() {
+        return code;
+    }
+}

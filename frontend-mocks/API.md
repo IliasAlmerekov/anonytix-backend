@@ -23,7 +23,23 @@ VITE_API_BASE_URL=http://localhost:8080/api/v1
 GET /public/invitations/{token}/form
 ```
 
+Der erste Aufruf liefert alle auswählbaren Abteilungen und ausschließlich
+allgemeine Fragen:
+
 Response: [`public-form.json`](./public-form.json)
+
+Nach der verpflichtenden Abteilungsauswahl:
+
+```http
+GET /public/invitations/{token}/form?departmentId={departmentId}
+```
+
+Dieser Response enthält allgemeine Fragen und Fragen der ausgewählten Abteilung:
+
+Response: [`public-form-department.json`](./public-form-department.json)
+
+Beim Wechsel der Abteilung muss das Frontend Antworten auf nicht mehr sichtbare
+Fragen aus seinem Formularzustand entfernen.
 
 Mögliche Fehler:
 
@@ -39,6 +55,10 @@ POST /public/invitations/{token}/submissions
 
 Request: [`requests/submit-feedback.json`](./requests/submit-feedback.json)  
 Response `201`: [`submission-response.json`](./submission-response.json)
+
+`departmentId` ist verpflichtend. Das Backend prüft, ob die Abteilung zum
+Unternehmen der Kampagne gehört und ob alle beantworteten Fragen für diese
+Abteilung sichtbar sind.
 
 Pro Antwort darf abhängig vom Fragetyp nur das passende Wertefeld gesetzt sein:
 
@@ -136,20 +156,18 @@ POST /companies/{companyId}/campaigns/{campaignId}/invitations
 ```
 
 Kampagne erstellen: [`requests/create-campaign.json`](./requests/create-campaign.json)  
-Einladungen erzeugen: [`requests/generate-invitations.json`](./requests/generate-invitations.json)
+Allgemeinen Einladungslink erzeugen:
+[`requests/generate-invitations.json`](./requests/generate-invitations.json)
 
-Die Einladungsantwort enthält die Klartext-Tokens genau einmal:
+Pro Kampagne wird für das MVP genau ein allgemeiner Link erzeugt. Die Antwort
+enthält den Klartext-Token genau einmal:
 
 ```json
 {
   "campaignId": "93b6108f-f005-4f4b-8ce9-952fa0a7ddc4",
-  "invitations": [
-    {
-      "departmentId": "ac38af63-dc5a-416e-b5d7-c237535ec37b",
-      "url": "http://localhost:5173/feedback/a-random-token",
-      "expiresAt": "2026-07-14T21:59:59Z"
-    }
-  ]
+  "token": "a-random-token",
+  "url": "http://localhost:5173/feedback/a-random-token",
+  "expiresAt": "2026-07-14T21:59:59Z"
 }
 ```
 
@@ -231,4 +249,3 @@ Wichtige Codes:
 
 Alle Endpunkte stehen zusätzlich in
 [`api-endpoints.json`](./api-endpoints.json).
-

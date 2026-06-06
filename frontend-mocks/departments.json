@@ -1,0 +1,26 @@
+[
+  {
+    "id": "ac38af63-dc5a-416e-b5d7-c237535ec37b",
+    "name": "Softwareentwicklung",
+    "code": "DEV",
+    "active": true
+  },
+  {
+    "id": "6a095a71-c076-4f35-98bd-4ec01937be84",
+    "name": "Vertrieb",
+    "code": "SALES",
+    "active": true
+  },
+  {
+    "id": "fedc9e7d-d917-4626-ab79-ec69c583814e",
+    "name": "Marketing",
+    "code": "MARKETING",
+    "active": true
+  },
+  {
+    "id": "d2f7524e-6e27-48dc-83ea-4ba9bfe716ca",
+    "name": "Personal",
+    "code": "HR",
+    "active": true
+  }
+]

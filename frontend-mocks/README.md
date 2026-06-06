@@ -7,7 +7,10 @@ Die JSON-Dateien entsprechen den geplanten Responses des Spring-Boot-Backends.
 - `API.md`: vollständiger API-Vertrag für das Frontend
 - `openapi.yaml`: OpenAPI-Vertrag für Swagger und Client-Generierung
 - `api-endpoints.json`: maschinenlesbare Liste aller MVP-Endpunkte
-- `public-form.json`: Formular für einen gültigen Einladungslink
+- `public-form.json`: Formular vor der Abteilungsauswahl
+- `public-form-department.json`: Formular nach Auswahl einer Abteilung
+- `invitation-response.json`: einzelner allgemeiner Einladungslink
+- `departments.json`: Abteilungen für Builder und Dropdown
 - `dashboard-overview.json`: Hauptdashboard mit KPIs und Charts
 - `department-dashboard.json`: Drilldown einer Abteilung
 - `submission-response.json`: Antwort nach erfolgreichem Absenden
